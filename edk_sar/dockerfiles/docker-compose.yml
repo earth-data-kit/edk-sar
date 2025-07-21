@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  edk-sar-isce2:
+    build:
+      context: https://github.com/earth-data-kit/isce2.git
+      dockerfile: docker/Dockerfile
+      tags:
+        - edk-sar-isce2:latest
+    image: edk-sar-isce2:latest
+    volumes:
+      - ./..:/workspace  # Mount the entire codebase (assuming this compose file is in edk/edk-sar/edk_sar/)
+      - ./../tmp:/tmp           # Mount the /tmp directory from host to container
+    working_dir: /workspace
+    tty: true
+    command: ["/bin/bash", "-c", "chmod +x ./*.sh && ./prebuild.sh && tail -f /dev/null"]

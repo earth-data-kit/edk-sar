@@ -52,3 +52,11 @@ Leverage polarimetric SAR data (e.g., VV, VH from Sentinel-1; HH, HV from NISAR)
 
 ---
 
+
+
+### Implementation Steps: 
+1. edk_sar.init() -- Launches ISCE2 container
+2. edk_sar.workflows.scan() -- Scans for SLCs from ASF data facility, takes bbox and timebounds as inputs
+3. edk_sar.workflows.sync() -- Syncs SLCs to local directory
+4. edk_sar.workflows.coregister.run() -- Coregisters SLCs, takes bbox and timebounds as input
+5. edk_sar.workflows.geocoded() -- Geocodes SLCs, using Geolocation Arrays
