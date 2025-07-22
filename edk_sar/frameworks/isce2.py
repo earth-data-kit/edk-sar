@@ -18,7 +18,6 @@ def get_container_id():
         return result.stdout.strip()
 
 def run_cmd(cmd):
-    print ("running cmd", cmd)
     container_id = get_container_id()
     client = docker.from_env()
     container = client.containers.get(container_id)

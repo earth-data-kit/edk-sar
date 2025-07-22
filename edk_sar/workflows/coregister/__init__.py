@@ -1,5 +1,5 @@
-import edk_sar as es
+import edk_sar.workflows.coregister.runner as runner
 
-def run():
-    output = es.frameworks.isce2.run_cmd("bash /workspace/workflows/coregister/run.sh")
-    print (output)
+def run(slc_paths):
+    runner._run(slc_paths)
+    

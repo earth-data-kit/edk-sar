@@ -1,0 +1,1 @@
+DEM_URL="http://step.esa.int/auxdata/dem/SRTMGL1/"
