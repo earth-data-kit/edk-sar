@@ -1,0 +1,10 @@
+__pycache__
+.DS_Store
+
+example.ipynb
+example.py
+
+tmp
+data
+
+.env
