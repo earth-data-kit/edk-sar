@@ -4,10 +4,10 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def init():
+def init(env_path):
     docker_compose_path = "edk_sar/dockerfiles/docker-compose.yml"
 
-    cmd = ["docker", "compose", "-f", docker_compose_path, "up", "--build", "-d"]
+    cmd = ["docker", "compose", "-f", docker_compose_path, "--env-file", env_path, "up", "--build", "-d"]
 
     # Build the Docker Compose services
     subprocess.run(
@@ -21,6 +21,7 @@ def get_container_id():
         return result.stdout.strip()
 
 def run_cmd(cmd):
+    logger.info(f"Running command: {cmd}")
     container_id = get_container_id()
     client = docker.from_env()
     container = client.containers.get(container_id)

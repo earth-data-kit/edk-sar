@@ -17,8 +17,6 @@ def _download_dem(bbox):
         str(math.ceil(bbox[3] + 0.25)),
         str(math.floor(bbox[0] - 0.25)),
         str(math.ceil(bbox[2] + 0.25)),
-        os.environ.get("DEM_USERNAME"),
-        os.environ.get("DEM_PASSWORD"),
     ]
 
     dem_cmd = " ".join(dem_args)
@@ -42,8 +40,6 @@ def _generate_run_files():
     run_files_cmd = [
         "bash",
         "/workspace/workflows/coregister/generate_run_files.sh",
-        os.environ.get("COPERNICUS_DATASPACE_USERNAME"),
-        os.environ.get("COPERNICUS_DATASPACE_PASSWORD"),
     ]
     es.frameworks.isce2.run_cmd(" ".join(run_files_cmd))
 
@@ -64,8 +60,13 @@ def _execute_run_files():
 def _get_aux_file():
     es.frameworks.isce2.run_cmd("bash /workspace/workflows/coregister/get_aux_file.sh")
 
+def _create_netrc():
+    es.frameworks.isce2.run_cmd("bash /workspace/workflows/coregister/create_netrc.sh")
+
 def _run(slc_path):
     slcs = glob.glob(os.path.join(slc_path, "*.zip"))
+    
+    _create_netrc()
     
     # Creating folders in docker container
     _create_folders()

@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   edk-sar-isce2:
     build:
@@ -8,6 +6,11 @@ services:
       tags:
         - edk-sar-isce2:latest
     image: edk-sar-isce2:latest
+    environment:
+        - USGS_USERNAME=${USGS_USERNAME}
+        - USGS_PASSWORD=${USGS_PASSWORD}
+        - COPERNICUS_DATASPACE_USERNAME=${COPERNICUS_DATASPACE_USERNAME}
+        - COPERNICUS_DATASPACE_PASSWORD=${COPERNICUS_DATASPACE_PASSWORD}
     volumes:
       - ./..:/workspace  # Mount the entire codebase (assuming this compose file is in edk/edk-sar/edk_sar/)
       - ./../tmp:/tmp           # Mount the /tmp directory from host to container

@@ -7,14 +7,6 @@ N=$2
 W=$3
 E=$4
 
-USERNAME=$5
-PASSWORD=$6
-
-if [[ -n "$USERNAME" && -n "$PASSWORD" ]]; then
-    echo "machine urs.earthdata.nasa.gov login $USERNAME password $PASSWORD" >> ~/.netrc
-    chmod 600 ~/.netrc
-fi
-
 mkdir -p /data/dem
 cd /data/dem
 

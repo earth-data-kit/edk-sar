@@ -27,10 +27,5 @@ formatter = logging.Formatter(
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
-def init():
-    # INSERT_YOUR_CODE
-    dem_username = os.environ.get("DEM_USERNAME")
-    dem_password = os.environ.get("DEM_PASSWORD")
-    if not dem_username or not dem_password:
-        raise RuntimeError("DEM_USERNAME and DEM_PASSWORD must be set in the .env file or environment variables.")
-    edk_sar.frameworks.isce2.init()
+def init(env_path):
+    edk_sar.frameworks.isce2.init(env_path)
