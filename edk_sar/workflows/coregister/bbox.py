@@ -5,6 +5,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 def get_bbox_from_gcps(raster_path):
     ds = gdal.Open(raster_path)
     gcps = ds.GetGCPs()
@@ -28,29 +29,31 @@ def get_bbox_from_gcps(raster_path):
     polygon = Polygon(points)
     return polygon.bounds  # (min_lon, min_lat, max_lon, max_lat)
 
+
 def get_measurement_file_paths(safe_fp):
     # Get all file paths inside the 'measurement' directory within the zip, without extracting
     measurement_file_paths = []
-    with zipfile.ZipFile(safe_fp, 'r') as zf:
+    with zipfile.ZipFile(safe_fp, "r") as zf:
         # Find the .SAFE root directory in the zip
         safe_dirs = set()
         for name in zf.namelist():
-            if name.endswith('.SAFE/'):
+            if name.endswith(".SAFE/"):
                 safe_dirs.add(name)
         if not safe_dirs:
             # Try to infer .SAFE root from file paths
             for name in zf.namelist():
-                if '.SAFE/' in name:
-                    safe_dirs.add(name.split('.SAFE/')[0] + '.SAFE/')
+                if ".SAFE/" in name:
+                    safe_dirs.add(name.split(".SAFE/")[0] + ".SAFE/")
         if not safe_dirs:
             logger.warning(f"No .SAFE directory found in {safe_fp}")
         else:
             safe_dir = sorted(safe_dirs)[0]
             measurement_prefix = safe_dir + "measurement/"
             for name in zf.namelist():
-                if name.startswith(measurement_prefix) and not name.endswith('/'):
+                if name.startswith(measurement_prefix) and not name.endswith("/"):
                     measurement_file_paths.append(name)
     return measurement_file_paths
+
 
 def get_bbox(slc_path):
     measurement_file_paths = get_measurement_file_paths(slc_path)
@@ -68,6 +71,7 @@ def get_bbox(slc_path):
     max_lat = max(b[3] for b in bboxes)
 
     return (min_lon, min_lat, max_lon, max_lat)
+
 
 def get_common_bbox(bboxes):
     if not bboxes or any(b is None for b in bboxes):

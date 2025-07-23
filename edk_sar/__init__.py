@@ -27,5 +27,6 @@ formatter = logging.Formatter(
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
+
 def init(env_path):
     edk_sar.frameworks.isce2.init(env_path)
