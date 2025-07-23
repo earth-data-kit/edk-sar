@@ -5,10 +5,49 @@ import os
 import logging
 import xml.etree.ElementTree as ET
 from edk_sar.workflows.coregister.bbox import get_bbox, get_common_bbox
+import glob
 
 logger = logging.getLogger(__name__)
 
-def _run(slc_paths):
+def _download_dem(bbox):
+    dem_args = [
+        "bash",
+        '/workspace/workflows/coregister/get_dem.sh',
+        str(math.floor(bbox[1] - 0.25)),
+        str(math.ceil(bbox[3] + 0.25)),
+        str(math.floor(bbox[0] - 0.25)),
+        str(math.ceil(bbox[2] + 0.25)),
+        os.environ.get("DEM_USERNAME"),
+        os.environ.get("DEM_PASSWORD"),
+    ]
+
+    dem_cmd = " ".join(dem_args)
+    es.frameworks.isce2.run_cmd(dem_cmd)
+
+def _create_folders():
+    es.frameworks.isce2.run_cmd("mkdir -p /data/slcs")
+    es.frameworks.isce2.run_cmd("mkdir -p /data/dem")
+    es.frameworks.isce2.run_cmd("mkdir -p /data/orbits")
+    es.frameworks.isce2.run_cmd("mkdir -p /data/aux_cal")
+    es.frameworks.isce2.run_cmd("mkdir -p /data/stack")
+
+def _copy_slcs(slc_path):
+    # Copy and move files to edk_sar/data/slcs/ using cp
+    dest_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../data/slcs/'))
+    os.makedirs(dest_dir, exist_ok=True)
+
+    os.system(f"cp -r {os.path.join(slc_path, '*.zip')} {dest_dir}/")
+
+def _generate_run_files():
+    run_files_cmd = [
+        "bash",
+        "/workspace/workflows/coregister/generate_run_files.sh",
+        os.environ.get("COPERNICUS_DATASPACE_USERNAME"),
+        os.environ.get("COPERNICUS_DATASPACE_PASSWORD"),
+    ]
+    es.frameworks.isce2.run_cmd(" ".join(run_files_cmd))
+
+def _get_common_bbox(slc_paths):
     # Get bounding box for all SLCs
     bboxes = []
     for slc_path in slc_paths:
@@ -17,53 +56,34 @@ def _run(slc_paths):
 
     common_bbox = get_common_bbox(bboxes)
 
+    return common_bbox
+
+def _execute_run_files():
+    es.frameworks.isce2.run_cmd("bash /workspace/workflows/coregister/execute_run_files.sh")
+
+def _get_aux_file():
+    es.frameworks.isce2.run_cmd("bash /workspace/workflows/coregister/get_aux_file.sh")
+
+def _run(slc_path):
+    slcs = glob.glob(os.path.join(slc_path, "*.zip"))
+    
+    # Creating folders in docker container
+    _create_folders()
+
+    # Getting common bounding box for all SLCs
+    common_bbox = _get_common_bbox(slcs)
+    
     # Download DEM
-    dem_args = [
-        "bash",
-        '/workspace/workflows/coregister/dem.sh',
-        str(math.floor(common_bbox[1] - 0.25)),
-        str(math.ceil(common_bbox[3] + 0.25)),
-        str(math.floor(common_bbox[0] - 0.25)),
-        str(math.ceil(common_bbox[2] + 0.25)),
-        '/data/dem',
-        os.environ.get("DEM_USERNAME"),
-        os.environ.get("DEM_PASSWORD"),
-        es.constants.DEM_URL
-    ]
-    dem_cmd = " ".join(dem_args)
-    es.frameworks.isce2.run_cmd(dem_cmd)
+    _download_dem(common_bbox)
+    
+    # Copy SLCs to docker container
+    _copy_slcs(slc_path)
+    
+    # Get aux file
+    _get_aux_file()
 
     # Generate run_files for coregistration
+    _generate_run_files()
 
-    # Execute all run_files one by one
-    return
-    # logger.info(f"Running DEM download script: {' '.join(dem_args)}")
-    # subprocess.run(dem_args, check=True)
-    return
-    # 4. Run the coregistration command to generate run_files
-    # Example: stackSentinel.py -s <slc_paths> -d <dem_dir> -W slc --num_proc 2 --num_proc4topo 2 -w <work_dir>
-    stack_script = "/home/ubuntu/sar/isce2/contrib/stack/topsStack/stackSentinel.py"
-    slc_arg = ",".join(slc_paths)
-    run_cmd = [
-        stack_script,
-        "-s", slc_arg,
-        "-d", dem_dir,
-        "-W", "slc",
-        "--num_proc", "2",
-        "--num_proc4topo", "2",
-        "-w", work_dir
-    ]
-    logger.info(f"Running coregistration command: {' '.join(run_cmd)}")
-    subprocess.run(run_cmd, check=True)
-
-    # 5. Execute all run files one by one
-    run_files_dir = os.path.join(work_dir, "run_files")
-    if not os.path.exists(run_files_dir):
-        logger.error(f"Run files directory does not exist: {run_files_dir}")
-        return
-
-    run_files = [os.path.join(run_files_dir, f) for f in os.listdir(run_files_dir) if f.endswith(".sh")]
-    run_files.sort()
-    for run_file in run_files:
-        logger.info(f"Executing run file: {run_file}")
-        subprocess.run(["bash", run_file], check=True)
+    # Executing run files one by one
+    _execute_run_files()

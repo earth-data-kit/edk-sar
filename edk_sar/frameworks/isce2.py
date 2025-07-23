@@ -1,5 +1,8 @@
 import subprocess
 import docker
+import logging
+
+logger = logging.getLogger(__name__)
 
 def init():
     docker_compose_path = "edk_sar/dockerfiles/docker-compose.yml"
@@ -22,5 +25,7 @@ def run_cmd(cmd):
     client = docker.from_env()
     container = client.containers.get(container_id)
 
-    exec_result = container.exec_run(cmd, stdout=True, stderr=True)
-    return exec_result.output.decode()    
+    # Stream output as it is produced
+    exec_result = container.exec_run(cmd, stdout=True, stderr=True, stream=True)
+    for chunk in exec_result.output:
+        print(chunk.decode(), end='', flush=True)

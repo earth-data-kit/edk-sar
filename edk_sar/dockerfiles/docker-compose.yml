@@ -14,4 +14,3 @@ services:
       - ./../data:/data # Mount the data directory where user will put there SLCs and outputs will generated created
     working_dir: /workspace
     tty: true
-    command: ["/bin/bash", "-c", "chmod +x ./*.sh && ./prebuild.sh && tail -f /dev/null"]
