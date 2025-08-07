@@ -12,6 +12,9 @@ If you're looking to leverage the power of ISCE2 for InSAR analysis without deal
 - **Python 3**: You should have Python 3 installed.
 - **pip**: Ensure you have `pip3` installed for managing Python packages.
 
+> **Note:** Some processes, such as phase unwrapping, require higher amounts of RAM. If your process is abruptly killed, try increasing the available RAM for your Docker container or system.
+
+
 ## Installation
 
 1. **Install Python dependencies:**
