@@ -24,23 +24,22 @@ def execute_run_files():
 
 
 def run(slc_path):
-    slcs = glob.glob(os.path.join(slc_path, "*.zip"))
-
     es.workflows.base.create_netrc()
 
     # Creating folders in docker container
     es.workflows.base.create_folders()
-
-    # Getting common bounding box for all SLCs
-    common_bbox = es.workflows.base.get_common_bbox(slcs)
-    # Download DEM
-    es.workflows.base.download_dem(common_bbox)
 
     # Copy SLCs to docker container
     es.workflows.base.copy_slcs(slc_path)
 
     # Get aux file
     es.workflows.base.get_aux_file()
+
+    slcs = glob.glob(os.path.join(slc_path, "*.zip"))
+    # Getting common bounding box for all SLCs
+    common_bbox = es.workflows.base.get_common_bbox(slcs)
+    # Download DEM
+    es.workflows.base.download_dem(common_bbox)
 
     # Generate run_files for coregistration
     generate_run_files()

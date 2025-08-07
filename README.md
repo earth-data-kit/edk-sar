@@ -53,7 +53,8 @@ If you're looking to leverage the power of ISCE2 for InSAR analysis without deal
 5. **Run the coregistration workflow:**
    ```python
    slc_path = "/path/to/your_slc_folder"  # Path to your downloaded SLCs
-   es.workflows.coregister.run(slc_path)
+   es.workflows.coregister.run(slc_path) # To run coregistration workflow
+   es.workflows.interferograms.run(slc_path) # To run interferograms workflow
    ```
 
 Replace the example paths and credentials with your actual information.
