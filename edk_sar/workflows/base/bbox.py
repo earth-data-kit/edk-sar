@@ -73,7 +73,7 @@ def get_bbox(slc_path):
     return (min_lon, min_lat, max_lon, max_lat)
 
 
-def get_common_bbox(bboxes):
+def get_common_bbox_from_boxes(bboxes):
     if not bboxes or any(b is None for b in bboxes):
         logger.error("Could not compute bounding boxes.")
         return

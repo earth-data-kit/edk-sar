@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Usage: dem.sh <W> <S> <E> <N> <output_dir>
-# Example: ./dem.sh -123.5 45.0 -122.0 46.0 /path/to/output-dir
+# Example: ./dem.sh -123.5 45.0 -122.0 46.0. Downloads in current directory
 S=$1
 N=$2
 W=$3
