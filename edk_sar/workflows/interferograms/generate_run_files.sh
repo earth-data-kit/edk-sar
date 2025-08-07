@@ -1,0 +1,1 @@
+/tmp/repos/isce2/contrib/stack/topsStack/stackSentinel.py -s /data/slcs -d /data/dem/dem.wgs84 -a /data/aux_cal -o /data/orbits -c all -W interferogram
