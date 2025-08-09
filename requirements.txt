@@ -1,1 +1,2 @@
-docker
+docker==7.1.0
+shapely==2.1.1
