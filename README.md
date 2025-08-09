@@ -21,6 +21,21 @@ If you're looking to leverage the power of ISCE2 for InSAR analysis without deal
    ```bash
    pip3 install -r requirements.txt
    ```
+> **Note:** You will also need to have **GDAL** and its Python bindings installed on your system.  
+> - On Ubuntu, you can install them with:  
+>   ```bash
+>   sudo apt-get install gdal-bin python3-gdal
+>   ```
+> - On Mac (with Homebrew):  
+>   ```bash
+>   brew install gdal
+>   pip3 install GDAL
+>   ```
+> - Or via pip (if you already have GDAL installed):  
+>   ```bash
+>   pip3 install GDAL
+>   ```
+> Make sure the GDAL version matches your Python version.
 
 ## How to Run
 
