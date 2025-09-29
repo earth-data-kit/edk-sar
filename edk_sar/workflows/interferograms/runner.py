@@ -1,7 +1,11 @@
 import edk_sar as es
 import glob
 import os
-
+import compute_phase
+import compute_displacement
+import convert_to_tiff
+import convert_to_cog
+import geocode_vrts
 
 def generate_run_files():
     run_files_cmd = [
@@ -33,3 +37,11 @@ def run(slc_path):
     generate_run_files()
 
     execute_run_files()
+
+    geocode_vrts.run()         # geocodes VRTs -> _geo.vrt
+    compute_phase.run()         # generates phase.vrt
+    compute_displacement.run()      # generates displacement.vrt
+    convert_to_tiff.run()           # converts VRTs -> GeoTIFFs
+    convert_to_cog.run()        # converts GeoTIFFs -> COGs
+
+    
