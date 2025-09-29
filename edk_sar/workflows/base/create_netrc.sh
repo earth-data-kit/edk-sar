@@ -1,6 +1,9 @@
 COPERNICUS_DATASPACE_USERNAME="${COPERNICUS_DATASPACE_USERNAME}"
 COPERNICUS_DATASPACE_PASSWORD="${COPERNICUS_DATASPACE_PASSWORD}"
 
+# This empties the netrc file so it's clean before writing new creds
+echo > ~/.netrc
+
 if [[ -n "$COPERNICUS_DATASPACE_USERNAME" && -n "$COPERNICUS_DATASPACE_PASSWORD" ]]; then
     echo "machine dataspace.copernicus.eu login $COPERNICUS_DATASPACE_USERNAME password $COPERNICUS_DATASPACE_PASSWORD" >> ~/.netrc
     chmod 600 ~/.netrc
