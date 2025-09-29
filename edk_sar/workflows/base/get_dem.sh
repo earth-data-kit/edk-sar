@@ -10,4 +10,4 @@ E=$4
 mkdir -p /data/dem
 cd /data/dem
 
-/usr/lib/python3.8/dist-packages/isce2/applications/dem.py -a stitch -b $S $N $W $E -r -s 1 -c -o dem
+/usr/lib/python3.8/dist-packages/isce2/applications/dem.py -f -a stitch -b $S $N $W $E -r -s 1 -c -o dem
