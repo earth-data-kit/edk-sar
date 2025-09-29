@@ -1,3 +1,5 @@
+# This file contains functions common for interferograms and coregistration workflows. 
+# Note this doesn't contain any helper functions like geocoding
 import math
 import edk_sar as es
 import os
@@ -36,6 +38,7 @@ def copy_slcs(slc_path):
 
 
 def get_common_bbox(slc_paths):
+    # TODO: Move to helpers.py
     # Get bounding box for all SLCs
     bboxes = []
     for slc_path in slc_paths:
