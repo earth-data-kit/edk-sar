@@ -62,31 +62,32 @@ def compute_phase(int_vrt_path: str, phase_vrt_path: str):
 
     print(f"[OK] Phase VRT created: {phase_vrt_path}")
 
-def compute_displacement(unwrap_vrt_path: str, displacement_vrt_path: str, wavelength_m: float):
+def compute_displacement(unwrap_vrt_path: str, displacement_tif_path: str, wavelength_m: float):
     """
     Compute displacement from an unwrapped interferogram.
 
     Parameters:
-    - unwrap_vrt_path : str : Path to unwrapped interferogram VRT.
-    - displacement_vrt_path : str : Path to save displacement VRT.
-    - wavelength_m : float : Radar wavelength in meters.
-
-    Notes:
-    - Uses gdal_calc.py to compute displacement = (lambda / 4π) * phase
+    - unwrap_vrt_path : str : Input unwrapped interferogram VRT
+    - displacement_tif_path : str : Path to save displacement (GeoTIFF)
+    - wavelength_m : float : Radar wavelength in meters
     """
     if not os.path.exists(unwrap_vrt_path):
         raise FileNotFoundError(f"Input unwrapped VRT not found: {unwrap_vrt_path}")
 
+    # we will Use GeoTIFF output, not VRT
+    # we need to change the output file from a .vrt to a real raster format, typically GeoTIFF (.tif).
+    # because gdal_calc.py cannot write to a VRT because it's just a virtual dataset.
+    # I have again added a step below to create a VRT from the GeoTIFF for geocoding later.
     cmd = [
         "gdal_calc.py",
         "-A", unwrap_vrt_path, "--A_band=1",
-        "--outfile", displacement_vrt_path,
+        "--outfile", displacement_tif_path,
         "--calc", f"({wavelength_m}/(4*3.14159265359))*A",
         "--type", "Float32"
     ]
 
     subprocess.run(cmd, check=True)
-    print(f"[OK] Displacement computed: {displacement_vrt_path}")
+    print(f"[OK] Displacement computed: {displacement_tif_path}")
 
 # ----------------------------
 # Main runner function
@@ -148,7 +149,18 @@ def run(slc_path, base_dir, wavelength_m: float):
     # Compute derived products
     # ----------------------------
     compute_phase(wrapped_vrt, phase_vrt)
-    compute_displacement(unwrapped_vrt, displacement_vrt, wavelength_m)
+    displacement_tif = os.path.join(interferogram_dir, "displacement.tif")
+    compute_displacement(unwrapped_vrt, displacement_tif, wavelength_m)
+
+    # creating a VRT for geocoding
+    displacement_vrt = os.path.join(interferogram_dir, "displacement.vrt")
+    subprocess.run([
+        "gdal_translate",
+        "-of", "VRT",
+        displacement_tif,
+        displacement_vrt
+    ], check=True)
+
 
     # ----------------------------
     # Geocode all relevant files
