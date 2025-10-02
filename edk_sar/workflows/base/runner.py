@@ -1,7 +1,7 @@
 import math
 import edk_sar as es
 import os
-from edk_sar.workflows.base.bbox import get_bbox, get_common_bbox_from_boxes
+from edk_sar.workflows.base.helpers import get_common_bbox,get_bbox
 
 def download_dem(bbox):
     dem_args = [
@@ -34,17 +34,6 @@ def copy_slcs(slc_path):
 
     os.system(f"cp -r {os.path.join(slc_path, '*.zip')} {dest_dir}/")
 
-
-def get_common_bbox(slc_paths):
-    # Get bounding box for all SLCs
-    bboxes = []
-    for slc_path in slc_paths:
-        bbox = get_bbox(slc_path)
-        bboxes.append(bbox)
-
-    common_bbox = get_common_bbox_from_boxes(bboxes)
-
-    return common_bbox
 
 def get_aux_file():
     es.frameworks.isce2.run_cmd("bash /workspace/workflows/base/get_aux_file.sh")
