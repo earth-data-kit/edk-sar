@@ -154,8 +154,11 @@ def geocode(input_vrt: str, lon_rdr: str, lat_rdr: str, output_vrt: str):
     etree.SubElement(geoloc, "MDI", key="PIXEL_STEP").text = "1"
     etree.SubElement(geoloc, "MDI", key="LINE_STEP").text = "1"
 
-    # Append to root and save temporary VRT
-    temp_vrt = output_vrt.replace(".vrt", "_temp.vrt")
+    # Creating intermediate VRT with geolocation (keep same name pattern)
+    base_dir = os.path.dirname(output_vrt)
+    base_name = os.path.basename(output_vrt).replace(".vrt", "")
+    temp_vrt = os.path.join(base_dir, f"{base_name}_with_geoloc.vrt")
+    
     root.append(geoloc)
     tree.write(temp_vrt, pretty_print=True)
     print(f"[OK] GEOLOCATION metadata added: {temp_vrt}")
@@ -163,6 +166,7 @@ def geocode(input_vrt: str, lon_rdr: str, lat_rdr: str, output_vrt: str):
     # Geocode using gdalwarp
     cmd = [
         "gdalwarp",
+        "-overwrite", 
         "-geoloc",
         "-t_srs", "EPSG:4326",
         "-of", "VRT",
@@ -171,10 +175,11 @@ def geocode(input_vrt: str, lon_rdr: str, lat_rdr: str, output_vrt: str):
     ]
     subprocess.run(cmd, check=True)
 
-    # Clean up temporary file
-    os.remove(temp_vrt)
+    # now we are not deleting temp file - the output VRT references it!
     print(f"[OK] Geocoded VRT created: {output_vrt}")
-    
+    print(f"[INFO] Keeping intermediate file: {temp_vrt}")
+
+    return output_vrt
 
 def convert_to_cog(input_file: str, output_file: str):
     if not os.path.exists(input_file):

@@ -5,7 +5,7 @@ import os
 from osgeo import gdal
 from edk_sar.workflows.base import helpers
 import numpy as np
-from base.constants import wavelength, PI
+from edk_sar.workflows.base.constants import SENTINEL_WAVELENGTH, PI
 
 # ----------------------------
 # Helper functions to run interferogram workflows
@@ -76,7 +76,7 @@ def compute_displacement(unwrapped_vrt_path: str, displacement_vrt_path: str):
         "gdal_calc.py",
         "-A", unwrapped_vrt_path,
         "--outfile", displacement_tif,
-        "--calc", f"(A*{wavelength})/({PI}*4)",
+        "--calc", f"(A*{SENTINEL_WAVELENGTH})/({PI}*4)",
         "--type", "Float32",
         "--overwrite"
     ], check=True)
@@ -99,7 +99,7 @@ def run(slc_path, base_dir):
     """
     Main function to process SLCs, generate interferogram products, 
     and geocode outputs.
-
+    
     Parameters:
     - slc_path : str : Path containing input SLC zip files.
     - base_dir : str : Base directory where interferogram and geom_reference folders exist.
@@ -112,15 +112,25 @@ def run(slc_path, base_dir):
     es.workflows.base.create_folders()
     es.workflows.base.copy_slcs(slc_path)
     es.workflows.base.get_aux_file()
-    
+
+    # ----------------------------
+    # Run interferogram processing scripts
+    # ----------------------------
+
     # Get bounding box of SLCs and download DEM
     slcs = glob.glob(os.path.join(slc_path, "*.zip"))
     common_bbox = helpers.get_common_bbox(slcs)
     es.workflows.base.download_dem(common_bbox)
 
+    generate_run_files()
+    execute_run_files()
+
+
+
+    # Inside Docker container
     # Define geometrical references
-    lon_rdr = os.path.join(base_dir, "geom_reference", "lon.rdr.full.vrt")
-    lat_rdr = os.path.join(base_dir, "geom_reference", "lat.rdr.full.vrt")
+    lon_rdr = os.path.join(base_dir, "geom_reference", "lon.rdr.vrt")
+    lat_rdr = os.path.join(base_dir, "geom_reference", "lat.rdr.vrt")
 
 
     # Define interferogram directory and input/output files
@@ -143,11 +153,6 @@ def run(slc_path, base_dir):
     phase_vrt = os.path.join(interferogram_dir, "phase.vrt")
     displacement_vrt = os.path.join(interferogram_dir, "displacement.vrt")
 
-    # ----------------------------
-    # Run interferogram processing scripts
-    # ----------------------------
-    generate_run_files()
-    execute_run_files()
 
     # ----------------------------
     # Compute derived products
@@ -179,3 +184,4 @@ def run(slc_path, base_dir):
 
     # Return dictionary of geocoded paths for downstream use
     return geocoded_paths
+    
