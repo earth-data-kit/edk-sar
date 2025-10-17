@@ -1,10 +1,12 @@
-from osgeo import gdal, osr
+import os
+import subprocess
+from osgeo import gdal,osr
+from lxml import etree
 from shapely.geometry import Polygon, box
 import zipfile
 import logging
 
 logger = logging.getLogger(__name__)
-
 
 def get_bbox_from_gcps(raster_path):
     ds = gdal.Open(raster_path)
@@ -21,14 +23,13 @@ def get_bbox_from_gcps(raster_path):
     transform = osr.CoordinateTransformation(srs, tgt_srs)
 
     # Convert all GCPs to lat/lon
-    points = []
+    points = [] 
     for gcp in gcps:
         x, y, _ = transform.TransformPoint(gcp.GCPX, gcp.GCPY)
         points.append((x, y))  # (lon, lat)
 
     polygon = Polygon(points)
     return polygon.bounds  # (min_lon, min_lat, max_lon, max_lat)
-
 
 def get_measurement_file_paths(safe_fp):
     # Get all file paths inside the 'measurement' directory within the zip, without extracting
@@ -54,7 +55,6 @@ def get_measurement_file_paths(safe_fp):
                     measurement_file_paths.append(name)
     return measurement_file_paths
 
-
 def get_bbox(slc_path):
     measurement_file_paths = get_measurement_file_paths(slc_path)
 
@@ -72,7 +72,6 @@ def get_bbox(slc_path):
 
     return (min_lon, min_lat, max_lon, max_lat)
 
-
 def get_common_bbox_from_boxes(bboxes):
     if not bboxes or any(b is None for b in bboxes):
         logger.error("Could not compute bounding boxes.")
@@ -87,3 +86,14 @@ def get_common_bbox_from_boxes(bboxes):
             raise ValueError("No common bounding box.")
 
     return intersection.bounds  # (min_lon, min_lat, max_lon, max_lat)
+
+def get_common_bbox(slc_paths):
+    # Get bounding box for all SLCs
+    bboxes = []
+    for slc_path in slc_paths:
+        bbox = get_bbox(slc_path)
+        bboxes.append(bbox)
+
+    common_bbox = get_common_bbox_from_boxes(bboxes)
+
+    return common_bbox
