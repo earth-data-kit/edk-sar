@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "edk-sar"
+version = "0.1.0"
+description = "A simplified InSAR processing wrapper around ISCE2."
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+authors = [
+  { name = "Earth Data Kit Team", email = "team@earthdatakit.org" }
+]
+dependencies = [
+  "xarray",
+  "numpy",
+  "pandas",
+  "gdal",
+  "affine",
+  "rasterio",
+  "folium",
+  "matplotlib",
+  "branca",
+]
+
+[project.urls]
+Homepage = "https://github.com/earth-data-kit/edk-sar"
+Documentation = "https://earth-data-kit.github.io/docs"
+Issues = "https://github.com/earth-data-kit/edk-sar/issues"
+
+[tool.setuptools.packages.find]
+include = ["edk_sar*"]
