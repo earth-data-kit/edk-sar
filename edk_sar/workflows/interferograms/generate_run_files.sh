@@ -2,9 +2,9 @@
 set -e
 
 # Default values
-POLARIZATION=""
-SWATH_NUM="2"
-SLC_PATH="/data/slcs"
+POLARIZATION="vv"
+SWATH_NUM="1 2 3"
+SLC_PATH="/workspace/data/slcs"
 
 # Help
 if [[ "$1" == "-h" || "$1" == "--help" ]]; then
@@ -39,10 +39,7 @@ CMD=(
   -c all
   -W interferogram
   -n "$SWATH_NUM"
+  -p "$POLARIZATION"
 )
 
-[[ -n "$POLARIZATION" ]] && CMD+=(-p "$POLARIZATION")
-
-# Run
-echo "Running: ${CMD[*]}"
 "${CMD[@]}"

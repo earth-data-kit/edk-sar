@@ -10,84 +10,47 @@ import matplotlib.colors as mcolors
 
 logger = logging.getLogger(__name__)
 
+
+import rasterio
+from rasterio.control import GroundControlPoint
+from rasterio.crs import CRS
+
+
+
+
 @xr.register_dataarray_accessor("edk")
 class EDKAccessor:
     def __init__(self, xarray_obj):
         self._obj = xarray_obj
 
-    def geocode(self, geom_root=None):
+    def geocode(self, lon_rdr, lat_rdr):
         da = self._obj
 
-        # If already geocoded, return itself
-        if "lon" in da.coords and "lat" in da.coords:
-            return da
-
-        # Determine geom_reference folder
-        if geom_root is None:
-            geom_root = self._find_data_root()
-
-        # Find lon/lat raster files
-        lon_rdr = self._find_geom_file(geom_root, "lon.rdr.vrt")
-        lat_rdr = self._find_geom_file(geom_root, "lat.rdr.vrt")
-
-        # Read lon/lat rasters
-        with rasterio.open(lon_rdr) as lon_ds:
+        # 1. Open your radar grid lon/lat rasters
+        with rasterio.open(lon_rdr) as lon_ds, rasterio.open(lat_rdr) as lat_ds:
             lon = lon_ds.read(1)
-        with rasterio.open(lat_rdr) as lat_ds:
             lat = lat_ds.read(1)
 
-        # --- Correct 2D geocoding ---
-        # Assign full 2D coordinates to the DataArray
-        geocoded_da = da.copy()
-        geocoded_da = geocoded_da.assign_coords({
-            "lon": (("y", "x"), lon),
-            "lat": (("y", "x"), lat)
-        })
+        geocoded_da = xr.DataArray(
+            data=da.data,  # shape (nrows, ncols)
+            dims=da.dims,
+            coords={
+                "band": da.coords["band"],
+                "lon": (("y", "x"), lon),
+                "lat": (("y", "x"), lat),
+            }
+        )
 
-        # Preserve attributes
-        geocoded_da.attrs.update(da.attrs)
-        geocoded_da.attrs['geocoded'] = True
-
-        logger.info(f"Updated coordinates using:\n  {lon_rdr}\n  {lat_rdr}")
-        print(f"[OK] Updated coordinates using:\n  {lon_rdr}\n  {lat_rdr}")
         return geocoded_da
 
-
-    def _find_data_root(self):
-        """
-        Search for edk_sar/data directory starting from current directory
-        and moving up the directory tree.
-        """
-        current = os.path.abspath(".")
-
-        # Try up to 5 levels up
-        for _ in range(5):
-            # Check if edk_sar/data exists here
-            candidate = os.path.join(current, "edk_sar", "data")
-            if os.path.exists(candidate):
-                return candidate
-
-            # Move up one level
-            parent = os.path.dirname(current)
-            if parent == current:  # reached root
-                break
-            current = parent
-
-        # Default to current directory if not found
-        return os.path.abspath(".")
-
-    def _find_geom_file(self, root_dir, filename):
-        for dirpath, _, files in os.walk(root_dir):
-            if filename in files:
-                return os.path.join(dirpath, filename)
-        raise FileNotFoundError(f"{filename} not found under {root_dir}")
-
+    # TODO: Add legend block
     def plot(self, colors="linear", opacity=0.8):
 
         da = self._obj
 
         # Extract and preprocess data
         if np.iscomplexobj(da.values):
+            logger.info("Found complex object, will plot phase")
             data = np.angle(da.values)  # phase for complex data
         else:
             data = da.values
@@ -103,7 +66,7 @@ class EDKAccessor:
         print(f"Data shape: {data.shape}")
         print(f"Data size in MB: {data.nbytes / 1024 / 1024:.2f}")
 
-# If > 10MB, the JavaScript embedding might fail
+        # If > 10MB, the JavaScript embedding might fail
 
         # For 2D coordinates, we need to handle flipping carefully
         # Folium expects: bounds = [[south, west], [north, east]]
@@ -142,11 +105,6 @@ class EDKAccessor:
             tiles="OpenStreetMap"
         )
 
-        # Create colormap for display
-        colormap = cm.LinearColormap(colors=colors, vmin=np.nanmin(data), vmax=np.nanmax(data))
-        colormap.caption = "Pixel Value"
-        colormap.add_to(m)
-
         # Matplotlib colormap for rendering
         mpl_colormap = mcolors.LinearSegmentedColormap.from_list("custom_cmap", colors)
         norm = mcolors.Normalize(vmin=np.nanmin(data), vmax=np.nanmax(data))
@@ -163,7 +121,7 @@ class EDKAccessor:
         )
         overlay.add_to(m)
         folium.LayerControl().add_to(m)
-
+        
         # Add opacity control
         opacity_slider = f"""
         <div id='opacity-control' style="
@@ -221,6 +179,7 @@ class EDKAccessor:
         </script>
         """
         m.get_root().html.add_child(folium.Element(opacity_slider))
+        return m
 
         # --- Add pixel hover tooltip ---
         hover_js = f"""

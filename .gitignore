@@ -9,3 +9,5 @@ data
 
 .env
 .venv
+
+*.egg-info

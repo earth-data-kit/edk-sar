@@ -19,21 +19,20 @@ def run(slc_path, polarization=None, swath_nums=None):
     es.workflows.base.download_dem(common_bbox)
 
     # --- 3. Generate and execute run files ---
-    generate_run_files(slc_path, polarization, swath_nums)
+    generate_run_files(polarization, swath_nums)
     execute_run_files()
 
 
-def generate_run_files(slc_path, polarization=None, swath_num=None):
+def generate_run_files(polarization=None, swath_nums=None):
     run_files_cmd = [
         "bash",
         "/workspace/workflows/interferograms/generate_run_files.sh",
-        "-s", slc_path,
     ]
 
     if polarization is not None:
         run_files_cmd += ["-p", str(polarization)]
-    if swath_num is not None:
-        run_files_cmd += ["-n", str(swath_num)]
+    if swath_nums is not None:
+        run_files_cmd += ["-n", str(swath_nums)]
 
     # Convert to a safe command string
     cmd_str = " ".join(f'"{x}"' for x in run_files_cmd)
