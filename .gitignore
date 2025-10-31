@@ -11,3 +11,4 @@ data
 .venv
 
 *.egg-info
+.vscode

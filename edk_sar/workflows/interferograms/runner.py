@@ -6,6 +6,7 @@ from edk_sar.workflows.base import helpers
 
 logger = logging.getLogger(__name__)
 
+
 def run(slc_path, polarization=None, swath_nums=None):
     # --- 1. Prepare environment ---
     es.workflows.base.create_netrc()

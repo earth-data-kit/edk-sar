@@ -1,7 +1,8 @@
 import math
 import edk_sar as es
 import os
-from edk_sar.workflows.base.helpers import get_common_bbox,get_bbox
+from edk_sar.workflows.base.helpers import get_common_bbox, get_bbox
+
 
 def download_dem(bbox):
     dem_args = [
