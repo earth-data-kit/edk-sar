@@ -17,7 +17,7 @@ If you're looking to leverage the power of ISCE2 for InSAR analysis without deal
 ## Prerequisites
 
 - **Docker**: Make sure you have [Docker](https://docs.docker.com/get-docker/) installed on your system. edk-sar uses Docker to provide a consistent environment and to run ISCE2 and related tools.
-- **Python 3**: You should have Python 3 installed.
+- **Python 3.13**: You should have Python 3.13 installed as it's been tested on this version.
 - **pip**: Ensure you have `pip3` installed for managing Python packages.
 
 > **Note:** Some processes, such as phase unwrapping, require higher amounts of RAM. If your process is abruptly killed, try increasing the available RAM for your Docker container or system.
@@ -35,17 +35,6 @@ If you're looking to leverage the power of ISCE2 for InSAR analysis without deal
    ```bash
    pip3 install -r requirements.txt
    ```
-
-**Required dependencies:**
-- `docker` - Docker SDK for Python
-- `xarray` - Multi-dimensional array manipulation
-- `rasterio` - Geospatial raster I/O
-- `shapely` - Geometric operations
-- `lxml` - XML processing
-- `folium` - Interactive map visualization
-- `branca` - Colormap support
-- `matplotlib` - Plotting utilities
-- `numpy` - Numerical operations
 
 > **Note:** You will also need to have **GDAL** and its Python bindings installed on your system.
 > - On Ubuntu:
@@ -105,28 +94,23 @@ import xarray as xr
 interferogram = xr.open_dataarray("path/to/interferogram.int")
 
 # Compute phase, displacement, and coherence
-phase = interferogram.edk.compute_phase()
-displacement = interferogram.edk.compute_displacement()
+phase = xr.apply_ufunc(np.angle, interferogram)
+displacement = (phase * WAVELENGTH) / (4 * np.pi)
 
 # Geocode the data
 phase_geocoded = phase.edk.geocode()
 displacement_geocoded = displacement.edk.geocode()
 ```
 
-### 4. Visualize and Export
+### 4. Visualize and Export (Need DataArrays to be geocoded)
 
 ```python
-phase_map = phase_geocoded.edk.plot(colors="cyclic", opacity=0.8)
-displacement_map = displacement_geocoded.edk.plot(colors="linear", opacity=0.8)
+phase_map = phase_geocoded.sel(band=1).edk.plot()
+displacement_map = displacement_geocoded.sel(band=1).edk.plot()
 
-# Save individual maps
-phase_map.save("phase_map.html")
-displacement_map.save("displacement_map.html")
-
-# Export to GeoTIFF (Cloud-Optimized GeoTIFF with LZW compression)
-phase_geocoded.edk.export("phase.tif", dtype="float32", compress="LZW")
-displacement_geocoded.edk.export("displacement.tif", dtype="float32", compress="LZW")
-coherence_geocoded.edk.export("coherence.tif", dtype="float32", compress="LZW")
+# Export to GeoTIFFs
+phase_geocoded.edk.export("phase.tif")
+displacement_geocoded.edk.export("displacement.tif")
 ```
 
 **Multi-layer Map Features:**
@@ -134,30 +118,10 @@ coherence_geocoded.edk.export("coherence.tif", dtype="float32", compress="LZW")
 - 🎨 Individual colormaps for each layer (cyclic for phase, linear for displacement/coherence)
 - 🔍 Opacity slider to adjust transparency of all layers
 - 📍 Interactive pixel value tooltips on hover
-- 💾 Export to HTML for easy sharing
-
-## Project Structure
-
-```
-edk-sar/
-├── edk_sar/
-│   ├── workflows/
-│   │   ├── base/
-│   │   │   ├── xarray_accessor.py  # Custom .edk accessor
-│   │   │   ├── constants.py        # Physical constants
-│   │   │   └── helpers.py          # Utility functions
-│   │   ├── coregister/             # SLC coregistration
-│   │   └── interferograms/         # Interferogram generation
-│   └── frameworks/                 # ISCE2 integration
-├── examples/
-│   └── sentinel1_mt_etna.ipynb     # Complete workflow example
-└── requirements.txt
-```
 
 ## Troubleshooting
 
-**Out of Memory Errors:** Phase unwrapping requires significant RAM. Increase Docker memory allocation:
-- Docker Desktop: Settings → Resources → Memory → Set to 8GB+
+**Out of Memory Errors:** Phase unwrapping requires significant RAM. Increase Docker memory allocation or trying in a bigger machine.
 
 **Geocoding Fails:** Ensure geometry files exist in `edk_sar/data/stack/merged/geom_reference/`:
 - `lon.rdr.vrt`
