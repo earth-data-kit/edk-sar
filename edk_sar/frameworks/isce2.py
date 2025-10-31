@@ -39,4 +39,4 @@ def run_cmd(cmd):
     # Stream output as it is produced
     exec_result = container.exec_run(cmd, stdout=True, stderr=True, stream=True)
     for chunk in exec_result.output:
-        print(chunk.decode(), end="", flush=True)
+        print(chunk.decode().rstrip())
