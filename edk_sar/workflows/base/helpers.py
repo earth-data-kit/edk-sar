@@ -1,4 +1,7 @@
+import os
+import subprocess
 from osgeo import gdal, osr
+from lxml import etree
 from shapely.geometry import Polygon, box
 import zipfile
 import logging
@@ -87,3 +90,15 @@ def get_common_bbox_from_boxes(bboxes):
             raise ValueError("No common bounding box.")
 
     return intersection.bounds  # (min_lon, min_lat, max_lon, max_lat)
+
+
+def get_common_bbox(slc_paths):
+    # Get bounding box for all SLCs
+    bboxes = []
+    for slc_path in slc_paths:
+        bbox = get_bbox(slc_path)
+        bboxes.append(bbox)
+
+    common_bbox = get_common_bbox_from_boxes(bboxes)
+
+    return common_bbox

@@ -9,3 +9,6 @@ data
 
 .env
 .venv
+
+*.egg-info
+.vscode
