@@ -68,6 +68,14 @@ class EDKAccessor:
             raise RuntimeError("Translate to VRT failed")
 
         # 2) Add GEOLOCATION metadata once (applies to all bands)
+        from osgeo import osr
+
+        # Create SRS object
+        srs = osr.SpatialReference()
+        srs.ImportFromEPSG(4326)
+        wkt_4326 = srs.ExportToWkt()
+
+        # Add GEOLOCATION metadata
         vrt_ds.SetMetadata(
             {
                 "X_DATASET": lon_rdr,
@@ -78,10 +86,11 @@ class EDKAccessor:
                 "LINE_OFFSET": "0",
                 "PIXEL_STEP": "1",
                 "LINE_STEP": "1",
-                "SRS": "EPSG:4326",
+                "SRS": wkt_4326,  # <-- Full WKT fixes both "missing [" and "unhandled keyword"
             },
             "GEOLOCATION",
         )
+
 
         vrt_ds.FlushCache()
 
