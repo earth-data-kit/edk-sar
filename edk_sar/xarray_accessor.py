@@ -86,7 +86,7 @@ class EDKAccessor:
                 "LINE_OFFSET": "0",
                 "PIXEL_STEP": "1",
                 "LINE_STEP": "1",
-                "SRS": wkt_4326,  # <-- Full WKT fixes both "missing [" and "unhandled keyword"
+                "SRS": wkt_4326, 
             },
             "GEOLOCATION",
         )
